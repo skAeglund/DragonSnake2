@@ -19,12 +19,6 @@ public class Fireball : MonoBehaviour
             transform.up = direction;
 
         StartCoroutine(DeathByTime(lifeTime));
-        //if (transform.parent.name.Substring(0, 4) == "Blue")
-        //{
-        //    speed *= 0.7f;
-        //    speed += transform.parent.GetComponentInChildren<SnakeBody>().SnakeList.Count * 0.2f;
-        //}
-        //else
         speed += transform.parent.GetComponentInChildren<SnakeBody>().SnakeList.Count *0.5f;
     }
     private void Update()
