@@ -19,13 +19,13 @@ public class Fireball : MonoBehaviour
             transform.up = direction;
 
         StartCoroutine(DeathByTime(lifeTime));
-        if (transform.parent.name.Substring(0, 4) == "Blue")
-        {
-            speed *= 0.7f;
-            speed += transform.parent.GetComponentInChildren<BlueDragon>().SnakeList.Count * 0.2f;
-        }
-        else
-            speed += transform.parent.GetComponentInChildren<PlayerSnake>().SnakeList.Count *0.5f;
+        //if (transform.parent.name.Substring(0, 4) == "Blue")
+        //{
+        //    speed *= 0.7f;
+        //    speed += transform.parent.GetComponentInChildren<SnakeBody>().SnakeList.Count * 0.2f;
+        //}
+        //else
+        speed += transform.parent.GetComponentInChildren<SnakeBody>().SnakeList.Count *0.5f;
     }
     private void Update()
     {
@@ -45,7 +45,7 @@ public class Fireball : MonoBehaviour
     {
         if (owner == null || other.gameObject == null || other.transform.parent == null)
             return;
-        else if (other.gameObject.Equals(owner) || other.transform.IsChildOf(owner.transform) || other.transform.parent.IsChildOf(owner.transform))
+        else if (other.gameObject.Equals(owner) || other.transform.IsChildOf(owner.transform) || other.transform.parent.IsChildOf(owner.transform) || other.gameObject.transform.root.Equals(owner))
             return;
         if (other.CompareTag("BodyPart") || other.CompareTag("SnakeHead"))
         {
@@ -56,7 +56,15 @@ public class Fireball : MonoBehaviour
             
             if (other.CompareTag("SnakeHead"))
             {
-                other.transform.parent.gameObject.SendMessage("CompleteConversionToFood");
+                if (other.transform.parent.TryGetComponent(out SnakeAbilities otherAbilities))
+                {
+                    if (!otherAbilities.StoneState.IsActive)
+                        other.transform.parent.gameObject.SendMessage("CompleteConversionToFood");
+                }
+                else // split snake doesn't have abilities
+                {
+                    other.transform.parent.gameObject.SendMessage("CompleteConversionToFood");
+                }
             }
         }
     }

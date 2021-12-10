@@ -108,7 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f6d3c6e4250e84192f5b34ce9e71bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  glowColor: {r: 1, g: 0.2028302, b: 0.2028302, a: 1}
+  glowColor: {r: 0, g: 0.7591562, b: 0.8490566, a: 1}
   glowBrightness: 1.52
   outlineWidth: 10
   alphaThreshold: 0.18
@@ -184,7 +184,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 20eba38d7b9acbc46a08fbd8f6ca795b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -271,7 +271,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1567609597
   m_SortingLayer: 1
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: e9778b494eaef0c4698577d182cce00c, type: 3}
   m_Color: {r: 0, g: 0.8927181, b: 1, a: 1}
   m_FlipX: 0

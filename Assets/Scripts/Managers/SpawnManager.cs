@@ -1,92 +1,145 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class SpawnManager : MonoBehaviour
 {
     [SerializeField] GameObject player;
-    PlayerSnake playerSnakeScript;
-    private static SpawnManager instance;
-    private float spawnDistanceFromPlayer = 7;
     [SerializeField] private float foodDelay = 2;
     [SerializeField] private float bombDelay = 2;
+    private PlayerController playerSnakeScript;
+    private Queue<GameObject> foodPool = new Queue<GameObject>();
+    private Transform foodParent;
+    private Transform bombParent;
+    private int foodAmount = 10;
+    
+    private float spawnDistanceFromPlayer = 7;
+    
     GameObject blueDragon;
-    private bool dragonHasBeenSpawnedOnce = false;
 
-    public static LinkedList<GameObject> Bombs { get; set; } = new LinkedList<GameObject>();
-    public static LinkedList<GameObject> Foods { get; set; } = new LinkedList<GameObject>();
+    public delegate void FoodSpawnEvent(GameObject newFood);
 
-    void Start()
+    public event FoodSpawnEvent onFoodSpawn;
+
+    public static SpawnManager Instance;
+    public LinkedList<GameObject> Bombs { get; set; } = new LinkedList<GameObject>();
+    public LinkedList<GameObject> Foods { get; set; } = new LinkedList<GameObject>();
+
+    void Awake()
     {
-        instance =this;
-        playerSnakeScript = player.GetComponent<PlayerSnake>();
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(this);
+
+        playerSnakeScript = player.GetComponent<PlayerController>();
+        foodParent = transform.Find("Foods");
+        bombParent = transform.Find("Bombs");
         StartCoroutine(SpawnFood());
         StartCoroutine(SpawnBombs());
-        StartCoroutine(BlueDragonRoutine());
+        StartCoroutine(BlueDragonRoutine(1));
     }
-
-    public static void SpawnBlueDragon(float delay = 0)
+    #region Food region
+    private IEnumerator SpawnFood()
     {
-        if (instance != null)
-            instance.StartCoroutine(instance.BlueDragonRoutine(delay));
+        for (int i = 0; i < foodAmount; i++)
+        {
+            // fill the pool
+            GameObject foodObject = Instantiate(Prefabs.Food, foodParent);
+            foodPool.Enqueue(foodObject);
+        }
+        while (player != null)
+        {
+            // spawns new food at the specified interval OR when only 1 food is active
+            ReleaseFoodFromPool();
+            float startTime = Time.time;
+            while (Time.time - startTime < foodDelay && Foods.Count > 1)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+        }
+    }
+    private void ReleaseFoodFromPool()
+    {
+        int randomX = Random.Range(0, 16);
+        int randomY = Random.Range(0, 9);
+        Vector3 randomPosition = Grid.GridPositions[randomX, randomY];
+
+        GameObject food = foodPool.Dequeue();
+        food.transform.position = randomPosition;
+        food.SetActive(true);
+        Foods.AddLast(food);
+        onFoodSpawn?.Invoke(food);
+    }
+    public void ReturnFoodToPool(GameObject food)
+    {
+        food.SetActive(false);
+        foodPool.Enqueue(food);
+        Foods.Remove(food);
+    }
+    public void SpawnFoodAtPosition(Vector3 position, bool ofColorRed = true)
+    {
+        GameObject foodPrefab = ofColorRed ? Prefabs.Food : Prefabs.BlueFood;
+
+        GameObject food = Instantiate(foodPrefab, position, Quaternion.identity, Instance.transform);
+        if (!food.activeSelf)
+            food.SetActive(true);
+        Foods.AddLast(food);
+    }
+    public GameObject GetClosestFood(Vector3 position, out float shortestDistance)
+    {
+        if (Foods.Count == 0)
+        {
+            shortestDistance = -1;
+            return null;
+        }
+        shortestDistance = float.MaxValue;
+        GameObject closestFood = Foods.First.Value;
+        foreach (GameObject food in Foods)
+        {
+            float distance = Vector3.Distance(position, food.transform.position);
+            if (distance < shortestDistance)
+            {
+                closestFood = food;
+                shortestDistance = distance;
+            }
+        }
+        return closestFood;
+    }
+    #endregion
+
+    #region DragonSpawn
+    public void SpawnBlueDragon(float delay = 0)
+    {
+        if (Instance != null)
+            Instance.StartCoroutine(Instance.BlueDragonRoutine(delay));
     }
     public void SpawnBlueDragon()
     {
-        instance.StartCoroutine(instance.BlueDragonRoutine());
+        Instance.StartCoroutine(Instance.BlueDragonRoutine());
     }
     private IEnumerator BlueDragonRoutine(float delay = 0)
     {
+        yield return new WaitForSeconds(delay);
         while (playerSnakeScript.SnakeList.Count < 16)
         {
             yield return new WaitForSeconds(1);
         }
-        yield return new WaitForSeconds(delay);
         if (blueDragon != null)
             yield break;
 
         
         Vector3 spawnPosition = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, 0, Camera.main.transform.position.z));
         spawnPosition.z = 0;
-        blueDragon = Instantiate(Prefabs.BlueDragonHead, spawnPosition, Quaternion.identity);
-        BlueDragon blueDragonScript = blueDragon.GetComponentInChildren<BlueDragon>();
-        blueDragonScript.DisableLevelSystem();
-
-        if (!dragonHasBeenSpawnedOnce)
-        {
-            blueDragonScript.Fireball.IsOnCooldown = true;
-            blueDragonScript.Fireball.HasLearned = false;
-            blueDragonScript.StartingLength = playerSnakeScript.SnakeList.Count - 3;
-        }
-        else
-        {
-            blueDragonScript.StartingLength = (int)(playerSnakeScript.SnakeList.Count *0.6f);
-        }
-        dragonHasBeenSpawnedOnce = true;
+        blueDragon = new SnakeBuilder().SetBlueColor().SetSpawnPosition(spawnPosition).SetStartingLength((int)(playerSnakeScript.SnakeList.Count * 0.6f)).Build();
+        //blueDragon = Instantiate(Prefabs.BlueDragonHead, spawnPosition, Quaternion.identity);
+        //SnakeBody body = blueDragon.GetComponentInChildren<SnakeBody>();
+        //body.StartingLength = (int)(playerSnakeScript.SnakeList.Count *0.6f);
     }
-    private IEnumerator SpawnFood()
-    {
-        while (player != null)
-        {
-            int randomX = Random.Range(0, 16);
-            int randomY = Random.Range(0, 9);
-            Vector3 randomPosition = Grid.GridPositions[randomX, randomY];
-            GameObject food = Instantiate(Prefabs.Food, randomPosition, Quaternion.identity, transform);
-            Foods.AddLast(food);
+    #endregion
 
-            float startTime = Time.time;
-            while (Time.time - startTime < foodDelay && Foods.Count != 0)
-            {
-                yield return new WaitForEndOfFrame();
-            }
-        }
-    }
-    public static void SpawnFoodAtPosition(Vector3 position, bool ofColorRed = true)
-    {
-        GameObject foodPrefab = ofColorRed ? Prefabs.Food : Prefabs.BlueFood;
 
-        GameObject food = Instantiate(foodPrefab, position, Quaternion.identity, instance.transform);
-        Foods.AddLast(food);
-    }
     private IEnumerator SpawnBombs()
     {
         while (true && player != null)
@@ -100,7 +153,7 @@ public class SpawnManager : MonoBehaviour
                 int randomY = Random.Range(0, 9);
                 randomPosition = Grid.GridPositions[randomX, randomY];
             }
-            GameObject bomb = Instantiate(Prefabs.Bomb, randomPosition, Quaternion.identity, transform);
+            GameObject bomb = Instantiate(Prefabs.Bomb, randomPosition, Quaternion.identity, bombParent);
                 Bombs.AddLast(bomb);
             
             if(Bombs.Count >= 3)
@@ -119,12 +172,12 @@ public class SpawnManager : MonoBehaviour
             }    
         }
     }
-
-    public static void DestroyAfterDelay(float delay, GameObject objectToDestroy)
+   
+    public void DestroyAfterDelay(float delay, GameObject objectToDestroy)
     {
-        instance.StartCoroutine(DelayedDestruction(delay, objectToDestroy));
+        Instance.StartCoroutine(DelayedDestruction(delay, objectToDestroy));
     }
-    public static IEnumerator DelayedDestruction(float delay, GameObject objectToDestroy)
+    public IEnumerator DelayedDestruction(float delay, GameObject objectToDestroy)
     {
         yield return new WaitForSeconds(delay);
         Destroy(objectToDestroy);

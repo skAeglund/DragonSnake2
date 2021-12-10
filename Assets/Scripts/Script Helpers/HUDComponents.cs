@@ -19,4 +19,11 @@ public class HUDComponents : MonoBehaviour
         stoneSkillUI = _stoneSkillUI;
         dashUI = _dashUI;
     }
+    public static void ConnectSkillsToHud(SnakeAbilities abilities)
+    {
+        abilities.Fireball.ConnectToHUD(fireballUI);
+        abilities.Whirlwind.ConnectToHUD(whirlWindUI);
+        abilities.StoneState.ConnectToHUD(stoneSkillUI);
+        abilities.Dash.ConnectToHUD(dashUI);
+    }
 }

@@ -9,12 +9,7 @@ public class SkillLight : MonoBehaviour
     float intensity;
     private void Start()
     {
-        if (transform.parent.name.Substring(0,4) == "Blue")
-        {
-            snakeList = transform.parent.GetComponentInChildren<BlueDragon>().SnakeList;
-        }
-        else
-            snakeList = transform.parent.GetComponentInChildren<PlayerSnake>().SnakeList;
+        snakeList = transform.parent.GetComponentInChildren<SnakeBody>().SnakeList;
 
         _light = GetComponent<Light>();
         intensity = Mathf.Lerp(125, _light.intensity, snakeList.Count / 20);

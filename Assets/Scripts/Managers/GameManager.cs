@@ -12,21 +12,22 @@ public class GameManager : MonoBehaviour
     public static bool isGameOver = false;
     public static int highestScore = 0;
 
-    public static List<MyLinkedList<GameObject>> ActiveSnakes {get;set;} = new List<MyLinkedList<GameObject>>();
+    //public static List<MyLinkedList<GameObject>> ActiveSnakes {get;set;} = new List<MyLinkedList<GameObject>>();
+
+    public List<SnakeManager> ActiveSnakes { get; set; } = new List<SnakeManager>();
 
     private void Start()
     {
-        //gameOverEvent.AddListener(GameOver);
         thisInstance = this;
     }
 
-    public static int GetLongestSnakeCount()
+    public int GetLongestSnakeCount()
     {
         int highestCount = 0;
-        foreach (var snakeList in ActiveSnakes)
+        foreach (SnakeManager snakeManager in ActiveSnakes)
         {
-            if (snakeList.Count > highestCount)
-                highestCount = snakeList.Count;
+            if (snakeManager.SnakeList.Count > highestCount)
+                highestCount = snakeManager.SnakeList.Count;
         }
         return highestCount;
     }

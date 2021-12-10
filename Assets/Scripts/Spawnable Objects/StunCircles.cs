@@ -11,7 +11,6 @@ public class StunCircles : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-
     private IEnumerator FlipYRoutine()
     {
         float delay = 0.2f;

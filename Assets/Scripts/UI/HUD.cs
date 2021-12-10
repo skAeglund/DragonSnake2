@@ -21,6 +21,7 @@ public class HUD : MonoBehaviour
 
     public static void UpdateScore(int score)
     {
+        if (scoreText == null) return;
         scoreText.text = "Score: " + score.ToString();
         if (score > GameManager.highestScore)
         {

@@ -12,15 +12,15 @@ public class Skill
     private Text hudTimer;
 
     public bool IsActive { get; set; } = false;
-    public bool IsOnCooldown { get; set; } = true;
-    public bool HasLearned { get; set; } = false;
-    public float RequiredLevel { get; set; }
+    public bool IsOnCooldown { get; set; } = false;
+    //public bool HasLearned { get; set; } = false;
+    //public float RequiredLevel { get; set; }
 
     public Skill (float duration, float cooldownTime, float requiredLevel = 0)
     {
         this.duration = duration;
         this.cooldownTime = cooldownTime;
-        this.RequiredLevel = requiredLevel;
+        //this.RequiredLevel = requiredLevel;
     }
     public void Activate()
     {
@@ -31,25 +31,8 @@ public class Skill
         if (availableUI != null)
             availableUI.color = Color.white * 0.75f;
     }
-    public void Unlearn()
-    {
-        IsActive = false;
-        HasLearned = false;
-        IsOnCooldown = true;
-        if (availableUI != null)
-            availableUI.color = Color.clear;
-    }
-    public void Learn()
-    {
-        HasLearned = true;
-        IsOnCooldown = false;
-        if (availableUI != null)
-            availableUI.color = Color.white;
-    }
     public void EndCooldown()
     {
-        if (!HasLearned) 
-            return;
         IsOnCooldown = false;
         IsActive = false;
         if (availableUI != null)

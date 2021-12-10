@@ -11,7 +11,7 @@ public class MiniTornado : MonoBehaviour
     private void OnEnable()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        snakeList = transform.parent.parent.parent.GetComponentInChildren<PlayerSnake>()?.SnakeList;
+        snakeList = transform.parent.parent.parent.GetComponentInChildren<SnakeBody>()?.SnakeList;
         ListNode<GameObject> nextNode = snakeList.Find(transform.parent.gameObject)?.Next;
         if (nextNode != null)
             nextTornado = nextNode.Value.transform.GetChild(1).gameObject;

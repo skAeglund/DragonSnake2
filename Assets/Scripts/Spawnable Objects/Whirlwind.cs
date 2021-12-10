@@ -11,6 +11,7 @@ public class Whirlwind : MonoBehaviour
     SpriteRenderer headSpriteRenderer2;
     Vector3 originalHeadPosition;
     GameObject nextMiniTornado;
+
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -23,8 +24,7 @@ public class Whirlwind : MonoBehaviour
 
     private void OnEnable()
     {
-        if (headSprite2 != null)
-            nextMiniTornado = transform.parent.GetComponent<PlayerSnake>().SnakeList.First.Next.Value.transform.GetChild(1).gameObject;
+        nextMiniTornado = transform.parent.GetComponent<SnakeBody>().SnakeList.First.Next.Value.transform.GetChild(1).gameObject;
         StartCoroutine(StartFlippingX());
     }
     private IEnumerator StartFlippingX()
@@ -44,9 +44,7 @@ public class Whirlwind : MonoBehaviour
         }
         while (true)
         {
-            //yield return new WaitForSeconds(delay);
             spriteRenderer.flipX = true;
-            //transform.localPosition = new Vector3(1.04f, -1, 0);
             yield return new WaitForSeconds(delay);
             headSpriteRenderer.flipY = false;
             headSprite.transform.localPosition = originalHeadPosition;

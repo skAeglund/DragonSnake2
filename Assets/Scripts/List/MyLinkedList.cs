@@ -18,11 +18,6 @@ public class MyLinkedList<T>
         first = null;
         last = null;
     }
-    public IEnumerator<T> GetEnumerator()
-    {
-        for (var i = 0; i < count; ++i)
-            yield return this[i];
-    }
     public void AddLast(T value)
     {
         if (count==0)
@@ -232,21 +227,44 @@ public class MyLinkedList<T>
            
         }
     }
-    public void CopyTo(MyLinkedList<T> array, int startIndex = 0, int length = -1)
+    public MyLinkedList<T> Copy(int startIndex = 0, int length = -1)
     {
         if (length == -1) length = count;
 
+        MyLinkedList<T> list = new MyLinkedList<T>();
         ListNode<T> currentNode = first;
         int copyCount = 0;
         for (int i = 0; i < count && currentNode != null && copyCount < length; i++, currentNode = currentNode.Next)
         {
             if (i >= startIndex)
             {
-                array[i - startIndex] = currentNode.Value;
+                list.AddLast(currentNode.Value);
                 copyCount++;
             }
 
         }
+        return list;
+    }
+    public MyLinkedList<T> Split(int startIndex = 0)
+    {
+        // Splits the list at the specified index into two seperate lists
+        // the new list will contain elements after the specified index
+
+        MyLinkedList<T> newList = new MyLinkedList<T>();
+        ListNode<T> currentNode = first;
+        int copyCount = 0;
+        for (int i = 0; i < count && currentNode != null && copyCount < count; i++)
+        {
+            ListNode<T> nextNode = currentNode.Next;
+            if (i >= startIndex)
+            {
+                newList.AddLast(currentNode.Value);
+                copyCount++;
+                Remove(currentNode.Value);
+            }
+            currentNode = nextNode;
+        }
+        return newList;
     }
     public T this[int index]
     {

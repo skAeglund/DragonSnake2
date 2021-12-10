@@ -5,32 +5,25 @@ public class Bomb : MonoBehaviour
 {
     [SerializeField] GameObject explosionPrefab;
     public bool isInsideSnake { get; private set; } = false;
-    PlayerSnake playerSnake;
-
-    private void Awake()
-    {
-        playerSnake = GameObject.Find("PlayerSnake").GetComponentInChildren<PlayerSnake>();
-    }
 
     private void OnCollisionEnter(Collision collision)
     {
-        
         if (collision.gameObject.CompareTag("Player"))
         {
-            StartCoroutine(MoveInsideSnake(collision.gameObject.GetComponent<PlayerSnake>()));
+            StartCoroutine(MoveInsideSnake(collision.gameObject.GetComponent<SnakeBody>()));
             GetComponent<SphereCollider>().enabled = false;
         }
     }
-    private IEnumerator MoveInsideSnake(PlayerSnake snake)
+    private IEnumerator MoveInsideSnake(SnakeBody snake)
     {
         // Makes the bomb move inside the snake and explode at a random position, splitting the snake into two
         if (snake.IsEatingBomb)
             yield break;
-        MyLinkedList<GameObject> snakeList = playerSnake.SnakeList;
+        MyLinkedList<GameObject> snakeList = snake.SnakeList;
         if (snakeList.Count <=2 /*|| snake.isEatingBomb*/)
         {
             GameManager.DelayedGameOver(0.75f);
-            SpawnManager.Bombs.Remove(gameObject);
+            SpawnManager.Instance.Bombs.Remove(gameObject);
             Destroy(gameObject);
             yield break;
         }
@@ -52,7 +45,7 @@ public class Bomb : MonoBehaviour
         // explode
         snake.IsEatingBomb = false;
         snake.SplitSnake(current.Value);
-        SpawnManager.Bombs.Remove(gameObject);
+        SpawnManager.Instance.Bombs.Remove(gameObject);
         Destroy(gameObject);
     }
     private void OnDestroy()
@@ -60,7 +53,7 @@ public class Bomb : MonoBehaviour
         if (!GameManager.isQuitting)
         {
             GameObject explosionObject = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
-            SpawnManager.DestroyAfterDelay(0.5f, explosionObject);
+            SpawnManager.Instance.DestroyAfterDelay(0.5f, explosionObject);
         }
     }
 }
